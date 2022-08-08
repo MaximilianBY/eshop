@@ -1,5 +1,6 @@
 package by.tms.eshop.repositories;
 
+import by.tms.eshop.dto.UserDto;
 import by.tms.eshop.entities.User;
 
 public interface UserDao {
@@ -11,5 +12,5 @@ public interface UserDao {
   User isExistUser(String login, String password);
 
   void saveNewUser(User user);
-  User getUserDataFromDbByLogin(User entity);
+  User getUserByLogin(User entity);
 }

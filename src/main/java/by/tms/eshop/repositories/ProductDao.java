@@ -1,17 +1,18 @@
 package by.tms.eshop.repositories;
 
+import by.tms.eshop.dto.ProductDto;
 import by.tms.eshop.entities.Product;
 import java.util.Set;
 
 public interface ProductDao {
 
-  Set<Product> getAllProductsFromDb();
+  Set<ProductDto> getAllProducts();
 
-  Set<Product> getAllProductsByCategoryFromDb(int categoryId);
+  Set<ProductDto> getProductsByCategory(int categoryId);
 
-  Product getProductByIdFromDb(int productId);
+  ProductDto getProductById(int productId);
 
-  Set<Product> findProductsByRequestFromSearchDb(String[] searchArray);
+  Set<ProductDto> searchProducts(String[] searchArray);
 
-  void updateProductQuantityInDb(Product product);
+  void updateProductQuantity(ProductDto product);
 }

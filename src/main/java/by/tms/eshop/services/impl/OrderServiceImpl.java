@@ -1,15 +1,16 @@
 package by.tms.eshop.services.impl;
 
-import static by.tms.eshop.PagesPathEnum.ACCOUNT_PAGE;
+import static by.tms.eshop.PagesPathConstants.ACCOUNT_PAGE;
 import static by.tms.eshop.RequestParamsEnum.ORDER_DETAILS;
 import static by.tms.eshop.RequestParamsEnum.TOTAL_PRICE;
 import static by.tms.eshop.RequestParamsEnum.USER_INFO;
 
+import by.tms.eshop.dto.ProductDto;
+import by.tms.eshop.dto.converters.ProductConverter;
 import by.tms.eshop.entities.Cart;
 import by.tms.eshop.entities.Order;
 import by.tms.eshop.entities.OrderDetails;
 import by.tms.eshop.entities.OrderDetailsId;
-import by.tms.eshop.entities.Product;
 import by.tms.eshop.entities.User;
 import by.tms.eshop.repositories.OrderDao;
 import by.tms.eshop.repositories.OrderDetailsDao;
@@ -33,13 +34,15 @@ public class OrderServiceImpl implements OrderService {
   private final ProductService productService;
   private final OrderDetailsDao orderDetailsDao;
   private final UserService userService;
+  private final ProductConverter productConverter;
 
   public OrderServiceImpl(OrderDao orderDao, ProductService productService,
-      OrderDetailsDao orderDetailsDao, UserService userService) {
+      OrderDetailsDao orderDetailsDao, UserService userService, ProductConverter productConverter) {
     this.orderDao = orderDao;
     this.productService = productService;
     this.orderDetailsDao = orderDetailsDao;
     this.userService = userService;
+    this.productConverter = productConverter;
   }
 
   @Override
@@ -73,13 +76,13 @@ public class OrderServiceImpl implements OrderService {
         .orderDate(LocalDate.now())
         .orderPrice(cart.getUserCartTotalPrice())
         .build();
-    orderDao.saveOrderInDb(order);
-    for (Product product : cart.getUsersCart()) {
+    orderDao.saveOrder(order);
+    for (ProductDto product : cart.getUsersCart()) {
       productService.updateProductQuantity(product);
 
       OrderDetailsId orderDetailsId = OrderDetailsId.builder()
           .order(order)
-          .product(product)
+          .product(productConverter.readFromDto(product))
           .build();
 
       OrderDetails orderDetails = OrderDetails.builder()
@@ -98,14 +101,14 @@ public class OrderServiceImpl implements OrderService {
     ModelMap modelMap = new ModelMap();
     User user = userService.getUserData(entity);
     modelMap.addAttribute(USER_INFO.getValue(), user);
-    Set<Order> userOrders = orderDao.getUserOrdersFromDb(user);
-    Set<OrderDetails> orderDetails = orderDetailsDao.getOrderDetailsFromDb(user);
+    Set<Order> userOrders = orderDao.getUserOrders(user);
+    Set<OrderDetails> orderDetails = orderDetailsDao.getOrderDetails(user);
     if (Optional.ofNullable(orderDetails).isPresent()) {
 //      modelMap.addAttribute(ORDER_STORY.getValue(), userOrders);
       modelMap.addAttribute(ORDER_DETAILS.getValue(), orderDetails);
       int totalOrderPrice = userOrders.stream().mapToInt(Order::getOrderPrice).sum();
       modelMap.addAttribute(TOTAL_PRICE.getValue(), totalOrderPrice);
     }
-    return new ModelAndView(ACCOUNT_PAGE.getPath(), modelMap);
+    return new ModelAndView(ACCOUNT_PAGE, modelMap);
   }
 }

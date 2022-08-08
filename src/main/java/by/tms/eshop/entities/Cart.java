@@ -1,5 +1,6 @@
 package by.tms.eshop.entities;
 
+import by.tms.eshop.dto.ProductDto;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -7,32 +8,32 @@ import java.util.Set;
 
 public class Cart {
 
-  private Set<Product> productInCart;
+  private Set<ProductDto> productInCart;
 
   public Cart() {
     this.productInCart = new HashSet<>();
   }
 
-  public Set<Product> getUsersCart() {
+  public Set<ProductDto> getUsersCart() {
     return productInCart;
   }
 
-  public void addProductToCart(Product product1) {
-    if (isExistProductInCart(product1)) {
+  public void addProductToCart(ProductDto addedProduct) {
+    if (isExistProductInCart(addedProduct)) {
       productInCart.stream()
-          .filter(product -> product.getId() == product1.getId())
+          .filter(product -> product.getId() == addedProduct.getId())
           .forEach(product -> {
             product.setQuantity(product.getQuantity() + 1);
-            product.setPrice(product.getQuantity() * product1.getPrice());
+            product.setPrice(product.getQuantity() * addedProduct.getPrice());
           });
     } else {
-      productInCart.add(Product.builder()
-          .id(product1.getId())
-          .brand(product1.getBrand())
-          .model(product1.getModel())
+      productInCart.add(ProductDto.builder()
+          .id(addedProduct.getId())
+          .brand(addedProduct.getBrand())
+          .model(addedProduct.getModel())
           .quantity(1)
-          .price(product1.getPrice())
-          .imagePath(product1.getImagePath())
+          .price(addedProduct.getPrice())
+          .imagePath(addedProduct.getImagePath())
           .build());
     }
   }
@@ -40,20 +41,20 @@ public class Cart {
   public int getUserCartTotalPrice() {
     if (Optional.ofNullable(productInCart).isPresent()) {
       return productInCart.stream()
-          .mapToInt(Product::getPrice)
+          .mapToInt(ProductDto::getPrice)
           .sum();
     }
     return 0;
   }
 
-  public void delUnnecessaryProduct(Product product1) {
+  public void delUnnecessaryProduct(ProductDto productToRemove) {
     productInCart.removeIf(product -> {
-      if (product.getId() == product1.getId() && product.getQuantity() <= 1) {
+      if (product.getId() == productToRemove.getId() && product.getQuantity() <= 1) {
         return true;
       } else {
-        if (product.getId() == product1.getId()) {
+        if (product.getId() == productToRemove.getId()) {
           product.setQuantity(product.getQuantity() - 1);
-          product.setPrice(product.getPrice() - product1.getPrice());
+          product.setPrice(product.getPrice() - productToRemove.getPrice());
           return false;
         }
       }
@@ -65,8 +66,8 @@ public class Cart {
     productInCart.clear();
   }
 
-  private boolean isExistProductInCart(Product product1) {
-    return productInCart.stream().anyMatch(product -> product.getId() == product1.getId());
+  private boolean isExistProductInCart(ProductDto productToCheck) {
+    return productInCart.stream().anyMatch(product -> product.getId() == productToCheck.getId());
   }
 
   @Override
