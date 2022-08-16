@@ -5,34 +5,29 @@ import by.tms.eshop.entities.User;
 import by.tms.eshop.repositories.OrderDao;
 import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
+@Transactional
 @Repository
 public class OrderDaoImpl implements OrderDao {
 
-  private final SessionFactory sessionFactory;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-  public OrderDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
+  @Override
+  public void saveOrder(Order order) {
+    entityManager.persist(order);
   }
 
   @Override
-  public void saveOrderInDb(Order order) {
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    session.save(order);
-    session.getTransaction().commit();
-  }
-
-  @Override
-  public Set<Order> getUserOrdersFromDb(User user) {
-    Session session = sessionFactory.getCurrentSession();
-    Query<Order> getOrders = session.createQuery("select u from Order u where u.user.id=:userId");
+  public Set<Order> getUserOrders(User user) {
+    Query getOrders = entityManager.createQuery("select u from Order u where u.user.id=:userId");
     getOrders.setParameter("userId", user.getId());
     log.info("user order info: " + getOrders.getResultList());
     return new HashSet<>(getOrders.getResultList());

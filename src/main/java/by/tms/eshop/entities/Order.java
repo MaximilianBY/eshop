@@ -22,7 +22,7 @@ public class Order extends BaseEntity {
 
   @ManyToOne(optional = false)
   //определяем связь многие к одному, указываем на невозможность существования нулевой связи
-  @JoinColumn(name = "USER_ID", nullable = false)
+  @JoinColumn(name = "USER_ID", nullable = false, referencedColumnName = "id")
   //указываем из какого столбца брать данные для данного поля и какому объекту он принадлежит
   private User user;
   @Column(name = "ORDER_DATE", nullable = false)

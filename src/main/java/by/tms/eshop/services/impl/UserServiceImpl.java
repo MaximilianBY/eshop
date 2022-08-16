@@ -1,8 +1,10 @@
 package by.tms.eshop.services.impl;
 
-import static by.tms.eshop.PagesPathEnum.REGISTRATION_PAGE;
-import static by.tms.eshop.PagesPathEnum.SIGN_IN_PAGE;
+import static by.tms.eshop.PagesPathConstants.REGISTRATION_PAGE;
+import static by.tms.eshop.PagesPathConstants.SIGN_IN_PAGE;
 
+import by.tms.eshop.dto.UserDto;
+import by.tms.eshop.dto.converters.UserConverter;
 import by.tms.eshop.entities.User;
 import by.tms.eshop.repositories.UserDao;
 import by.tms.eshop.services.CategoryService;
@@ -18,10 +20,13 @@ public class UserServiceImpl implements UserService {
 
   private final UserDao userDao;
   private final CategoryService categoryService;
+  private final UserConverter userConverter;
 
-  public UserServiceImpl(UserDao userDao, CategoryService categoryService) {
+  public UserServiceImpl(UserDao userDao, CategoryService categoryService,
+      UserConverter userConverter) {
     this.userDao = userDao;
     this.categoryService = categoryService;
+    this.userConverter = userConverter;
   }
 
   @Override
@@ -35,7 +40,7 @@ public class UserServiceImpl implements UserService {
       }
     }
     log.info("user not exist");
-    return new ModelAndView(SIGN_IN_PAGE.getPath());
+    return new ModelAndView(SIGN_IN_PAGE);
   }
 
   @Override
@@ -44,12 +49,12 @@ public class UserServiceImpl implements UserService {
     ModelAndView modelAndView = new ModelAndView();
     log.info(user.getLogin() + " " + user.getName());
     if (checkUserEntry(user)) {
-      User userFromDb = userDao.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
-      if (Optional.ofNullable(userFromDb).isEmpty()) {
+      User newUser = userDao.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
+      if (Optional.ofNullable(newUser).isEmpty()) {
         userDao.saveNewUser(user);
-        modelAndView.setViewName(SIGN_IN_PAGE.getPath());
+        modelAndView.setViewName(SIGN_IN_PAGE);
       } else {
-        modelAndView.setViewName(REGISTRATION_PAGE.getPath());
+        modelAndView.setViewName(REGISTRATION_PAGE);
       }
     }
     return modelAndView;
@@ -57,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User getUserData(User entity) {
-    User user = userDao.getUserDataFromDbByLogin(entity);
+    User user = userDao.getUserByLogin(entity);
     return user;
   }
 

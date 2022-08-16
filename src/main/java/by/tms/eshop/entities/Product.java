@@ -36,7 +36,7 @@ public class Product extends BaseEntity {
   private int quantity;
   @ManyToOne(optional = false)
   //определяем связь многие к одному, указываем на невозможность существования нулевой связи
-  @JoinColumn(name = "CATEGORY_ID", nullable = false) //указываем из какого столбца брать данные для данного поля и какому объекту он принадлежит
+  @JoinColumn(name = "CATEGORY_ID", nullable = false, referencedColumnName = "id") //указываем из какого столбца брать данные для данного поля и какому объекту он принадлежит
   private Category category;
   @Column(name = "IMAGE_PATH", nullable = false) //указываем из какого столбца брать данные для данного поля
   private String imagePath;

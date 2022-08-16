@@ -1,17 +1,20 @@
 package by.tms.eshop.services.impl;
 
 
-import static by.tms.eshop.PagesPathEnum.DEVICES_PAGE;
-import static by.tms.eshop.PagesPathEnum.PRODUCT_PAGE;
-import static by.tms.eshop.PagesPathEnum.SEARCH_PAGE;
+import static by.tms.eshop.PagesPathConstants.DEVICES_PAGE;
+import static by.tms.eshop.PagesPathConstants.PRODUCT_PAGE;
+import static by.tms.eshop.PagesPathConstants.SEARCH_PAGE;
 import static by.tms.eshop.RequestParamsEnum.DEVICES;
 import static by.tms.eshop.RequestParamsEnum.PRODUCT;
 
+import by.tms.eshop.dto.ProductDto;
+import by.tms.eshop.dto.converters.ProductConverter;
 import by.tms.eshop.entities.Product;
 import by.tms.eshop.repositories.ProductDao;
 import by.tms.eshop.services.ProductService;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,48 +29,48 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Set<Product> getAllProductsByCategory(int categoryID) throws Exception {
-    Optional<Set<Product>> products = Optional.ofNullable(
-        productDao.getAllProductsByCategoryFromDb(categoryID));
+  public Set<ProductDto> getAllProductsByCategory(int categoryID) throws Exception {
+    Optional<Set<ProductDto>> products = Optional.ofNullable(
+        productDao.getProductsByCategory(categoryID));
     return products.orElse(null);
   }
 
   @Override
-  public Product getProductByID(int productID) throws Exception {
-    Optional<Product> product = Optional.ofNullable(productDao.getProductByIdFromDb(productID));
+  public ProductDto getProductByID(int productID) throws Exception {
+    Optional<ProductDto> product = Optional.ofNullable(productDao.getProductById(productID));
     return product.orElse(null);
   }
 
   @Override
-  public Set<Product> findProductByRequestFromSearch(String[] searchArray) throws Exception {
-    Optional<Set<Product>> products = Optional.ofNullable(
-        productDao.findProductsByRequestFromSearchDb(searchArray));
+  public Set<ProductDto> findProductByRequestFromSearch(String[] searchArray) throws Exception {
+    Optional<Set<ProductDto>> products = Optional.ofNullable(
+        productDao.searchProducts(searchArray));
     return products.orElse(null);
   }
 
   @Override
-  public void updateProductQuantity(Product product) {
-    productDao.updateProductQuantityInDb(product);
+  public void updateProductQuantity(ProductDto product) {
+    productDao.updateProductQuantity(product);
   }
 
   @Override
   public ModelAndView openDevicesPage(int categoryId) {
     ModelMap modelMap = new ModelMap();
-    Set<Product> products = productDao.getAllProductsByCategoryFromDb(categoryId);
+    Set<ProductDto> products = productDao.getProductsByCategory(categoryId);
     if (Optional.ofNullable(products).isPresent()) {
       modelMap.addAttribute(DEVICES.getValue(), products);
     }
-    return new ModelAndView(DEVICES_PAGE.getPath(), modelMap);
+    return new ModelAndView(DEVICES_PAGE, modelMap);
   }
 
   @Override
   public ModelAndView getProductData(int id) throws Exception {
     ModelMap modelMap = new ModelMap();
-    Product product = productDao.getProductByIdFromDb(id);
+    ProductDto product = productDao.getProductById(id);
     if (Optional.ofNullable(product).isPresent()) {
       modelMap.addAttribute(PRODUCT.getValue(), product);
     }
-    return new ModelAndView(PRODUCT_PAGE.getPath(), modelMap);
+    return new ModelAndView(PRODUCT_PAGE, modelMap);
   }
 
   @Override
@@ -76,8 +79,13 @@ public class ProductServiceImpl implements ProductService {
     if (Optional.ofNullable(inputString).isPresent()) {
       String[] searchArr = inputString.split("\\W");
       modelMap.addAttribute(DEVICES.getValue(),
-          productDao.findProductsByRequestFromSearchDb(searchArr));
+          productDao.searchProducts(searchArr));
     }
-    return new ModelAndView(SEARCH_PAGE.getPath(), modelMap);
+    return new ModelAndView(SEARCH_PAGE, modelMap);
+  }
+
+  @Override
+  public Set<ProductDto> getAllProducts() {
+    return productDao.getAllProducts();
   }
 }
